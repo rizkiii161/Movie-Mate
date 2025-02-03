@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:movieslist/constans.dart';
 import 'package:movieslist/views/my_app_home_screen.dart';
+import 'package:movieslist/views/my_movies_screen.dart';
 
 
 class AppMainScreen extends StatefulWidget {
@@ -18,10 +19,8 @@ class _AppMainScreenState extends State<AppMainScreen> {
   void initState() {
     page = [
       MyAppHomeScreen(),
-      navBarPage(Iconsax.heart5),
+      MyMoviesScreen(),
       navBarPage(Iconsax.star5),
-      navBarPage(Iconsax.video5),
-      navBarPage(Iconsax.user),
     ];
     super.initState();
   }
