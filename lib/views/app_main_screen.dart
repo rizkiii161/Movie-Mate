@@ -60,25 +60,13 @@ class _AppMainScreenState extends State<AppMainScreen> {
         ),
         BottomNavigationBarItem(
           icon: Icon(
-            selectedIndex == 1 ? Iconsax.heart5: Iconsax.heart_tick ,
-          ),
-          label: "favorite",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(
-            selectedIndex == 2 ?Iconsax.star5 :Iconsax.star,
-          ),
-          label: "Rate",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(
-           selectedIndex == 3 ? Iconsax.video5 : Iconsax.video_add,
+           selectedIndex == 1 ? Iconsax.video5 : Iconsax.video_add,
           ),
           label: "My Movies",
         ),
         BottomNavigationBarItem(
           icon: Icon(
-            selectedIndex == 4 ? Iconsax.user : Iconsax.user_add,
+            selectedIndex == 2 ? Iconsax.user : Iconsax.user_add,
           ),
           label: "profile",
         ),

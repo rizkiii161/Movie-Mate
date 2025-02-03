@@ -11,38 +11,86 @@ class MyAppHomeScreen extends StatefulWidget {
 }
 
 class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
-  final List<String> categories = [
-    "All",
-    "Action",
-    "Drama",
-    "Sci-Fi",
-    "Horror",
-    "Comedy"
-  ];
+  final List<String> categories = ["All", "Action", "Drama", "Sci-Fi", "Horror", "Comedy"];
   int selectedCategoryIndex = 0;
   List<dynamic> trendingMovies = [];
+  List<dynamic> filteredMovies = [];
   bool isLoading = true;
+  Map<int, String> genres = {}; // Menyimpan daftar genre
 
   @override
   void initState() {
     super.initState();
     fetchTrendingMovies();
+    fetchGenres(); // Ambil daftar genre saat inisialisasi
   }
 
   Future<void> fetchTrendingMovies() async {
     try {
       final movies = await ApiService.fetchTrendingMovies();
-      print("Data from API: $movies"); // Cetak data yang diterima dari API
+      print("Data from API: ${movies.length} movies"); // Debug: Cetak jumlah film
       setState(() {
         trendingMovies = movies;
+        filteredMovies = movies; // Awalnya, filteredMovies sama dengan trendingMovies
         isLoading = false;
       });
     } catch (e) {
-      print("Error fetching movies: $e"); // Cetak error jika terjadi
+      print("Error fetching movies: $e");
       setState(() {
         isLoading = false;
       });
     }
+  }
+
+  Future<void> fetchGenres() async {
+    try {
+      final genreList = await ApiService.fetchGenres();
+      setState(() {
+        genres = genreList;
+      });
+    } catch (e) {
+      print("Error fetching genres: $e");
+    }
+  }
+
+  void filterMoviesByCategory(int index) {
+    setState(() {
+      selectedCategoryIndex = index;
+      if (index == 0) {
+        // Jika "All" dipilih, tampilkan semua film
+        filteredMovies = trendingMovies;
+      } else {
+        // Filter film berdasarkan genre
+        final genreName = categories[index];
+        final genreId = _getGenreId(genreName);
+        filteredMovies = trendingMovies.where((movie) {
+          final genreIds = movie['genre_ids'] as List<dynamic>;
+          return genreIds.contains(genreId);
+        }).toList();
+      }
+    });
+  }
+
+  int _getGenreId(String genreName) {
+    // Mapping nama genre ke genre ID
+    switch (genreName) {
+      case "Action":
+        return 28;
+      case "Drama":
+        return 18;
+      case "Sci-Fi":
+        return 878;
+      case "Horror":
+        return 27;
+      case "Comedy":
+        return 35;
+      default:
+        return 0;
+    }
+  }
+
+  String getGenreNames(List<dynamic> genreIds) {
+    return genreIds.map((id) => genres[id] ?? "Unknown").join(", ");
   }
 
   @override
@@ -88,8 +136,7 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
                     fillColor: ksecondarycolor,
                     hintText: "Search movies...",
                     hintStyle: TextStyle(color: Colors.grey[500]),
-                    prefixIcon:
-                        Icon(Iconsax.search_normal, color: Colors.grey[500]),
+                    prefixIcon: Icon(Iconsax.search_normal, color: Colors.grey[500]),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30),
                       borderSide: BorderSide.none,
@@ -107,27 +154,20 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
                     itemBuilder: (context, index) {
                       return GestureDetector(
                         onTap: () {
-                          setState(() {
-                            selectedCategoryIndex = index;
-                          });
+                          filterMoviesByCategory(index); // Panggil fungsi filter
                         },
                         child: Container(
                           margin: EdgeInsets.symmetric(horizontal: 6),
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
-                            color: selectedCategoryIndex == index
-                                ? kbluecolor
-                                : ksecondarycolor,
+                            color: selectedCategoryIndex == index ? kbluecolor : ksecondarycolor,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Center(
                             child: Text(
                               categories[index],
                               style: TextStyle(
-                                color: selectedCategoryIndex == index
-                                    ? Colors.white
-                                    : Colors.grey[400],
+                                color: selectedCategoryIndex == index ? Colors.white : Colors.grey[400],
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -143,39 +183,29 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
                 SizedBox(
                   height: 200,
                   child: isLoading
-                      ? Center(
-                          child: CircularProgressIndicator(color: kbluecolor))
+                      ? Center(child: CircularProgressIndicator(color: kbluecolor))
                       : trendingMovies.isEmpty
-                          ? Center(
-                              child: Text("No movies found",
-                                  style: TextStyle(color: ktextcolor)))
+                          ? Center(child: Text("No movies found", style: TextStyle(color: ktextcolor)))
                           : PageView(
                               scrollDirection: Axis.horizontal,
                               children: trendingMovies
-                                  .sublist(
-                                      0,
-                                      trendingMovies.length < 4
-                                          ? trendingMovies.length
-                                          : 4)
+                                  .sublist(0, trendingMovies.length < 4 ? trendingMovies.length : 4)
                                   .map((movie) => Stack(
                                         children: [
-                                          moviePoster(
-                                              "https://image.tmdb.org/t/p/w500${movie['poster_path']}"),
+                                          moviePoster("https://image.tmdb.org/t/p/w500${movie['poster_path']}"),
                                           Positioned(
                                             bottom: 10,
                                             left: 10,
                                             right: 10,
                                             child: Container(
                                               padding: EdgeInsets.all(5),
-                                              color:
-                                                  Colors.black.withOpacity(0.6),
+                                              color: Colors.black.withOpacity(0.6),
                                               child: Text(
                                                 movie['title'],
                                                 style: TextStyle(
                                                     color: Colors.white,
                                                     fontSize: 14,
-                                                    fontWeight:
-                                                        FontWeight.bold),
+                                                    fontWeight: FontWeight.bold),
                                                 textAlign: TextAlign.center,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
@@ -201,17 +231,14 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
 
                 // TRENDING MOVIE LIST
                 isLoading
-                    ? Center(
-                        child: CircularProgressIndicator(color: kbluecolor))
-                    : trendingMovies.isEmpty
-                        ? Center(
-                            child: Text("No movies found",
-                                style: TextStyle(color: ktextcolor)))
+                    ? Center(child: CircularProgressIndicator(color: kbluecolor))
+                    : filteredMovies.isEmpty
+                        ? Center(child: Text("No movies found", style: TextStyle(color: ktextcolor)))
                         : Column(
-                            children: trendingMovies
+                            children: filteredMovies
                                 .map((movie) => trendingMovieItem(
                                       movie['title'],
-                                      movie['genre_ids'].join(", "),
+                                      getGenreNames(movie['genre_ids']),
                                       "https://image.tmdb.org/t/p/w500${movie['poster_path']}",
                                     ))
                                 .toList(),
@@ -250,11 +277,9 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
       child: ListTile(
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child:
-              Image.network(imageUrl, width: 50, height: 70, fit: BoxFit.cover),
+          child: Image.network(imageUrl, width: 50, height: 70, fit: BoxFit.cover),
         ),
-        title: Text(title,
-            style: TextStyle(color: ktextcolor, fontWeight: FontWeight.bold)),
+        title: Text(title, style: TextStyle(color: ktextcolor, fontWeight: FontWeight.bold)),
         subtitle: Text(genre, style: TextStyle(color: Colors.grey[400])),
         trailing: Icon(Iconsax.play, color: kbluecolor),
       ),
