@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:movieslist/constans.dart';
+import 'package:movieslist/services/constans.dart';
 
 
 class MovieDetailScreen extends StatelessWidget {

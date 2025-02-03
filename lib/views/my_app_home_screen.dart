@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:movieslist/constans.dart';
-import 'package:movieslist/api_service.dart';
+import 'package:movieslist/services/constans.dart';
+import 'package:movieslist/services/api_service.dart';
 import 'movie_detail_screen.dart';
 
 class MyAppHomeScreen extends StatefulWidget {

@@ -1,7 +1,7 @@
 // import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:movieslist/constans.dart';
+import 'package:movieslist/services/constans.dart';
 import 'package:movieslist/views/my_app_home_screen.dart';
 import 'package:movieslist/views/my_movies_screen.dart';
 
@@ -19,7 +19,8 @@ class _AppMainScreenState extends State<AppMainScreen> {
   void initState() {
     page = [
       MyAppHomeScreen(),
-      MyMoviesScreen(),
+      // MyMoviesScreen(),
+      navBarPage(Iconsax.star5),
       navBarPage(Iconsax.star5),
     ];
     super.initState();
