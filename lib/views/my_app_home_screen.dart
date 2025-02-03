@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:movieslist/constans.dart';
-import 'package:movieslist/my_icon_button.dart';
+import 'package:movieslist/api_service.dart'; // Import file API service
 
 class MyAppHomeScreen extends StatefulWidget {
   const MyAppHomeScreen({super.key});
@@ -11,8 +11,39 @@ class MyAppHomeScreen extends StatefulWidget {
 }
 
 class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
-  final List<String> categories = ["All", "Action", "Drama", "Sci-Fi", "Horror", "Comedy"];
+  final List<String> categories = [
+    "All",
+    "Action",
+    "Drama",
+    "Sci-Fi",
+    "Horror",
+    "Comedy"
+  ];
   int selectedCategoryIndex = 0;
+  List<dynamic> trendingMovies = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTrendingMovies();
+  }
+
+  Future<void> fetchTrendingMovies() async {
+    try {
+      final movies = await ApiService.fetchTrendingMovies();
+      print("Data from API: $movies"); // Cetak data yang diterima dari API
+      setState(() {
+        trendingMovies = movies;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error fetching movies: $e"); // Cetak error jika terjadi
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,18 +62,18 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        "What do you watch Today?",
+                        "What do you want to watch Today?",
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
                           height: 1.2,
-                          color: Colors.white,
+                          color: ktextcolor,
                         ),
                       ),
                     ),
-                    MyIconButton(
-                      icon: Iconsax.notification,
-                      pressed: () {
+                    IconButton(
+                      icon: Icon(Iconsax.notification, color: ktextcolor),
+                      onPressed: () {
                         print("Notification clicked");
                       },
                     ),
@@ -54,10 +85,11 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
                 TextField(
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Colors.grey[900],
+                    fillColor: ksecondarycolor,
                     hintText: "Search movies...",
                     hintStyle: TextStyle(color: Colors.grey[500]),
-                    prefixIcon: Icon(Iconsax.search_normal, color: Colors.grey[500]),
+                    prefixIcon:
+                        Icon(Iconsax.search_normal, color: Colors.grey[500]),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30),
                       borderSide: BorderSide.none,
@@ -81,16 +113,21 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
                         },
                         child: Container(
                           margin: EdgeInsets.symmetric(horizontal: 6),
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
-                            color: selectedCategoryIndex == index ? Colors.blueAccent : Colors.grey[800],
+                            color: selectedCategoryIndex == index
+                                ? kbluecolor
+                                : ksecondarycolor,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Center(
                             child: Text(
                               categories[index],
                               style: TextStyle(
-                                color: selectedCategoryIndex == index ? Colors.white : Colors.grey[400],
+                                color: selectedCategoryIndex == index
+                                    ? Colors.white
+                                    : Colors.grey[400],
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -105,14 +142,49 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
                 // CAROUSEL MOVIE POSTERS
                 SizedBox(
                   height: 200,
-                  child: PageView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      moviePoster("https://image.tmdb.org/t/p/w500//8Vs5FTHth3JJVoysF3Fb4CxlKxS.jpg"),
-                      moviePoster("https://image.tmdb.org/t/p/w500//rC3GiEf9cWvVDNfxjWBhF1Syh9a.jpg"),
-                      moviePoster("https://image.tmdb.org/t/p/w500//qNBAXBIQlnOThrVvA6mA2B5ggV6.jpg"),
-                    ],
-                  ),
+                  child: isLoading
+                      ? Center(
+                          child: CircularProgressIndicator(color: kbluecolor))
+                      : trendingMovies.isEmpty
+                          ? Center(
+                              child: Text("No movies found",
+                                  style: TextStyle(color: ktextcolor)))
+                          : PageView(
+                              scrollDirection: Axis.horizontal,
+                              children: trendingMovies
+                                  .sublist(
+                                      0,
+                                      trendingMovies.length < 4
+                                          ? trendingMovies.length
+                                          : 4)
+                                  .map((movie) => Stack(
+                                        children: [
+                                          moviePoster(
+                                              "https://image.tmdb.org/t/p/w500${movie['poster_path']}"),
+                                          Positioned(
+                                            bottom: 10,
+                                            left: 10,
+                                            right: 10,
+                                            child: Container(
+                                              padding: EdgeInsets.all(5),
+                                              color:
+                                                  Colors.black.withOpacity(0.6),
+                                              child: Text(
+                                                movie['title'],
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                                textAlign: TextAlign.center,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ))
+                                  .toList(),
+                            ),
                 ),
                 const SizedBox(height: 20),
 
@@ -122,19 +194,28 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: ktextcolor,
                   ),
                 ),
                 const SizedBox(height: 10),
 
                 // TRENDING MOVIE LIST
-                Column(
-                  children: [
-                    trendingMovieItem("John Wick 4", "Action", "https://image.tmdb.org/t/p/w500//vZloFAK7NmvMGKE7VkF5UHaz0I.jpg"),
-                    trendingMovieItem("Oppenheimer", "Drama", "https://image.tmdb.org/t/p/w500//svPLX5XkP7QFwkpxSiR2cYfaLeP.jpg"),
-                    trendingMovieItem("Dune: Part Two", "Sci-Fi", "https://image.tmdb.org/t/p/w500//dU4HfnTEJDf9KvxGS9hgO7w9Dlx.jpg"),
-                  ],
-                ),
+                isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(color: kbluecolor))
+                    : trendingMovies.isEmpty
+                        ? Center(
+                            child: Text("No movies found",
+                                style: TextStyle(color: ktextcolor)))
+                        : Column(
+                            children: trendingMovies
+                                .map((movie) => trendingMovieItem(
+                                      movie['title'],
+                                      movie['genre_ids'].join(", "),
+                                      "https://image.tmdb.org/t/p/w500${movie['poster_path']}",
+                                    ))
+                                .toList(),
+                          ),
                 const SizedBox(height: 20),
               ],
             ),
@@ -163,17 +244,19 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: ksecondarycolor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: Image.network(imageUrl, width: 50, height: 70, fit: BoxFit.cover),
+          child:
+              Image.network(imageUrl, width: 50, height: 70, fit: BoxFit.cover),
         ),
-        title: Text(title, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(title,
+            style: TextStyle(color: ktextcolor, fontWeight: FontWeight.bold)),
         subtitle: Text(genre, style: TextStyle(color: Colors.grey[400])),
-        trailing: Icon(Iconsax.play, color: Colors.blueAccent),
+        trailing: Icon(Iconsax.play, color: kbluecolor),
       ),
     );
   }
