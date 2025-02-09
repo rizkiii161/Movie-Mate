@@ -24,24 +24,23 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
   List<dynamic> trendingMovies = [];
   List<dynamic> filteredMovies = [];
   bool isLoading = true;
-  Map<int, String> genres = {}; // Menyimpan daftar genre
+  Map<int, String> genres = {}; 
 
   @override
   void initState() {
     super.initState();
     fetchTrendingMovies();
-    fetchGenres(); // Ambil daftar genre saat inisialisasi
+    fetchGenres(); 
   }
 
   Future<void> fetchTrendingMovies() async {
     try {
       final movies = await ApiService.fetchTrendingMovies();
       print(
-          "Data from API: ${movies.length} movies"); // Debug: Cetak jumlah film
+          "Data from API: ${movies.length} movies"); 
       setState(() {
         trendingMovies = movies;
-        filteredMovies =
-            movies; // Awalnya, filteredMovies sama dengan trendingMovies
+        filteredMovies = movies; // Awalnya, filteredMovies sama dengan trendingMovies
         isLoading = false;
       });
     } catch (e) {
@@ -139,22 +138,6 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
                 ),
                 const SizedBox(height: 15),
 
-                // SEARCH BAR
-                TextField(
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: ksecondarycolor,
-                    hintText: "Search movies...",
-                    hintStyle: TextStyle(color: Colors.grey[500]),
-                    prefixIcon:
-                        Icon(Iconsax.search_normal, color: Colors.grey[500]),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
 
                 // CATEGORY FILTER
                 SizedBox(
@@ -217,7 +200,7 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
                                   .map((movie) => Stack(
                                         children: [
                                           moviePoster(
-                                              "https://image.tmdb.org/t/p/w500${movie['poster_path']}"),
+                                              "https://image.tmdb.org/t/p/w780${movie['poster_path']}"),
                                           Positioned(
                                             bottom: 10,
                                             left: 10,
@@ -284,18 +267,23 @@ class _MyAppHomeScreenState extends State<MyAppHomeScreen> {
   }
 
   // MOVIE POSTER WIDGET
-  Widget moviePoster(String imageUrl) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        image: DecorationImage(
-          image: NetworkImage(imageUrl),
-          fit: BoxFit.cover,
-        ),
+ Widget moviePoster(String imageUrl) {
+  return Container(
+    margin: EdgeInsets.symmetric(horizontal: 8),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(15),
+    ),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(15),
+      child: Image.network(
+        imageUrl,
+        width: double.infinity, // Memastikan gambar memenuhi container
+        height: 200, // Sesuaikan dengan ukuran carousel
+        fit: BoxFit.contain, // Menyesuaikan lebar gambar agar tidak terpotong
       ),
-    );
-  }
+    ),
+  );
+}
 
   // TRENDING MOVIE ITEM
   Widget trendingMovieItem(
